@@ -41,9 +41,7 @@ module.exports = async (wss, ws, message) => {
                 data: messageData.data,
                 type: 'startGame'
             }));
-
-            let roomId = messageData.data.roomId;
-            startGame(wss, roomId);
+            startGame(wss, messageData.data.roomId);
 
             break;
         case 'drawPicture':
