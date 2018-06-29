@@ -1,0 +1,28 @@
+{
+  "name": "draw",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:server": "nodemon server/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-component": "^1.1.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-1": "^6.24.1",
+    "moment": "^2.22.2",
+    "nodemon": "^1.17.5"
+  },
+  "dependencies": {
+    "koa": "^2.5.1",
+    "koa-body": "^2.6.0",
+    "koa-router": "^7.4.0",
+    "koa2-cors": "^2.0.5",
+    "mysql": "^2.15.0"
+  }
+}
