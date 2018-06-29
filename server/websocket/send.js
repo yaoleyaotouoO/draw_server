@@ -1,8 +1,8 @@
 const webSocketController = require('../controllers/websocket');
-const { startGame } = require('./startGame');
+const { startGame, checkAnswer } = require('./startGame');
 const moment = require('moment');
 
-broadcast = (wss, data) => {
+let broadcast = (wss, data) => {
     wss.clients.forEach((client) => {
         client.send(data);
     });
@@ -49,6 +49,10 @@ module.exports = async (wss, ws, message) => {
                 data: messageData.data,
                 type: 'drawPicture'
             }));
+
+            break;
+        case 'submitAnswer':
+            checkAnswer(wss, messageData.data);
 
             break;
         default:

@@ -2,15 +2,17 @@ const roomUserCache = require('./roomUserCache');
 const userCache = require('./userCache');
 const webSocketController = require('../controllers/websocket');
 const apiController = require('../controllers/api');
-const send = require('./send');
 
-broadcast = (wss, data, excludeWs) => {
+let broadcast = (wss, data, excludeWs) => {
     wss.clients.forEach((client) => {
-        (client !== excludeWs) && client.send(data);
+        console.log("client: ", client);
+        if (client !== excludeWs) {
+            client.send(data);
+        }
     });
 }
 
-gameCountDown = (wss, topicData, roomId) => {
+let gameCountDown = (wss, topicData, roomId) => {
     const oneRoundTime = 10;
     let gameTime = oneRoundTime;
     let topicName = topicData.name;
@@ -25,7 +27,7 @@ gameCountDown = (wss, topicData, roomId) => {
         if (!gameTime && ((gameRound + 1) === gameTotalRound)) {
             // 游戏结束统计分数
             let userScoreList = {
-
+                showScore: true
             }
             broadcast(wss, JSON.stringify({
                 data: { roomId, userScoreList },
@@ -73,7 +75,7 @@ gameCountDown = (wss, topicData, roomId) => {
         gameTime--;
 
         // 发送给画的人
-        userCache.get(drawUserId).ws.send(JSON.stringify({
+        userCache.get(drawUserId) && userCache.get(drawUserId).ws.send(JSON.stringify({
             data: Object.assign({}, gameInfo, { topicName }),
             type: 'gameInfo'
         }));
@@ -85,13 +87,35 @@ gameCountDown = (wss, topicData, roomId) => {
     }, 1000);
 }
 
-startGame = async (wss, roomId) => {
+let startGame = async (wss, roomId) => {
     let topicData = await webSocketController.getRandomTopic();
     topicData = topicData[0];
 
     gameCountDown(wss, topicData, roomId);
 }
 
+
+let checkAnswer = (wss, data) => {
+    let roomId = data.roomId;
+    let drawAnswer = data.drawAnswer;
+    let userId = data.userId;
+    let userName = data.userName;
+
+    let roomUserData = roomUserCache.get(roomId);
+    console.log("roomUserData: ", roomUserData);
+    if (roomUserData.topicName === drawAnswer) {
+        // TODO 判断是第几个答对的，答对了之后 发送 xjx1: 答对了。   答错了 发送 xjx1: drawAnswer
+        broadcast(wss, JSON.stringify({
+
+        }));
+    } else {
+        broadcast(wss, JSON.stringify({
+
+        }));
+    }
+}
+
 module.exports = {
-    startGame
+    startGame,
+    checkAnswer
 }

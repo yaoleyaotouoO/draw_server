@@ -19,14 +19,29 @@ module.exports = (server) => {
 class WebSocketConnection {
     constructor(ws, wss) {
         this.userId = '';
+        this.userName = '';
 
         ws.on('message', (message) => {
             console.log("message: ", message);
             const messageData = JSON.parse(message);
             if (messageData.type === 'setWebSocketUserId') {
                 this.userId = messageData.data.userId;
-                webSocketController.setRoomUserAtive({ isActive: 1, id: this.userId })
-                userCache.set(this.userId, {ws});
+                this.userName = messageData.data.userName;
+                let roomId = messageData.data.roomId;
+                if (roomId) {
+                    message = JSON.stringify({
+                        data: {
+                            userId: this.userId,
+                            userName: this.userName,
+                            roomId
+                        },
+                        type: 'addRoomUser'
+                    });
+                    webSocketSend(wss, ws, message);
+                }
+
+                webSocketController.setRoomUserAtive({ isActive: 1, id: this.userId });
+                userCache.set(this.userId, { ws });
                 return;
             }
 
