@@ -7,7 +7,7 @@ const cors = require('koa2-cors');
 const app = new Koa();
 app.use(KoaBody());
 
-const HOST = 'localhost';
+const HOST = '0.0.0.0';
 const PORT = 3333;
 
 app.use(cors({

@@ -1,6 +1,6 @@
 apps:
   - script: ./server/server.js
-    name: draw
+    name: draw_server
     env_production:
       NODE_ENV: production
       HOST: localhost
