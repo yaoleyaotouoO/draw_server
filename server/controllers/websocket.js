@@ -1,20 +1,22 @@
 const { sqlQuery } = require('../db/db');
-
+const moment = require('moment');
 
 module.exports = {
-    createRoom(query) {
+    createRoom({ name, createTime, status }) {
         let sql = 'INSERT INTO draw_Room(id, name, createTime, status) VALUES (0, ?, ?, ?)';
-        let values = [query.name, query.createTime, query.status];
+        let values = [name, createTime, status];
 
         return sqlQuery(sql, values);
     },
-    async addRoomUser(query) {
+    async addRoomUser({ userId, roomId }) {
         let sql = 'SELECT * FROM draw_RoomUser WHERE userId = ? AND roomId = ?';
-        let values = [query.userId, query.roomId];
+        let values = [userId, roomId];
         let data = await sqlQuery(sql, values);
         if (data.length > 0) return;
 
-        sql = 'INSERT INTO draw_RoomUser(id, userId, roomId) VALUES (0, ?, ?)';
+        let inTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        values.push(inTime);
+        sql = 'INSERT INTO draw_RoomUser(id, userId, roomId, inTime) VALUES (0, ?, ?, ?)';
 
         return await sqlQuery(sql, values);
     },
@@ -23,15 +25,9 @@ module.exports = {
 
         return sqlQuery(sql);
     },
-    updateRoomUserActive(query) {
-        let sql = `UPDATE draw_roomuser SET isActive = ? WHERE id = ?`;
-        let values = [query.isActive, query.id];
-
-        return sqlQuery(sql, values);
-    },
-    setRoomUserAtive(query) {
+    setRoomUserAtive({ isActive, id }) {
         let sql = `UPDATE draw_userinfo SET isActive = ? WHERE id = ?`;
-        let values = [query.isActive, query.id];
+        let values = [isActive, id];
 
         return sqlQuery(sql, values);
     },
@@ -42,6 +38,12 @@ module.exports = {
 
         sql = `SELECT * FROM draw_topic WHERE Id = ?`;
         let values = [isNaN(RandomCount) ? 0 : RandomCount];
+
+        return sqlQuery(sql, values);
+    },
+    updateRoomStatusbyRoomId({ roomId, status }) {
+        let sql = `UPDATE draw_room SET status = ? WHERE id = ?`;
+        let values = [status, roomId];
 
         return sqlQuery(sql, values);
     }

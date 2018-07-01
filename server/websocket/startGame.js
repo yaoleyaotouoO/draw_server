@@ -2,10 +2,10 @@ const roomUserCache = require('./roomUserCache');
 const userCache = require('./userCache');
 const webSocketController = require('../controllers/websocket');
 const apiController = require('../controllers/api');
+const enumDto = require('./enumDto');
 
 let broadcast = (wss, data, excludeWs) => {
     wss.clients.forEach((client) => {
-        console.log("client: ", client);
         if (client !== excludeWs) {
             client.send(data);
         }
@@ -25,16 +25,15 @@ let gameCountDown = (wss, topicData, roomId) => {
 
     let time = setInterval(async () => {
         if (!gameTime && ((gameRound + 1) === gameTotalRound)) {
-            // 游戏结束统计分数
-            let userScoreList = {
-                showScore: true
-            }
-            broadcast(wss, JSON.stringify({
-                data: { roomId, userScoreList },
-                type: 'gameOver'
-            }))
-            clearInterval(time);
+            await webSocketController.updateRoomStatusbyRoomId({ roomId, status: enumDto.RoomStatusEnum.Ready });
 
+            // 游戏结束统计分数
+            broadcast(wss, JSON.stringify({
+                data: { roomId, showScore: true },
+                type: 'gameOver'
+            }));
+
+            clearInterval(time);
             return;
         }
 
@@ -91,6 +90,8 @@ let startGame = async (wss, roomId) => {
     let topicData = await webSocketController.getRandomTopic();
     topicData = topicData[0];
 
+    await webSocketController.updateRoomStatusbyRoomId({ roomId, status: enumDto.RoomStatusEnum.Running });
+
     gameCountDown(wss, topicData, roomId);
 }
 
@@ -106,7 +107,8 @@ let checkAnswer = (wss, data) => {
     if (roomUserData.topicName === drawAnswer) {
         // TODO 判断是第几个答对的，答对了之后 发送 xjx1: 答对了。   答错了 发送 xjx1: drawAnswer
         broadcast(wss, JSON.stringify({
-
+            roomId,
+            
         }));
     } else {
         broadcast(wss, JSON.stringify({
