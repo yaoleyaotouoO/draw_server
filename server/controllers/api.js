@@ -8,10 +8,24 @@ module.exports = {
         return sqlQuery(sql);
     },
     login({ userName, passWord }) {
-        let sql = `SELECT * FROM draw_UserInfo WHERE userName = ? AND passWord = ?`
+        let sql = `SELECT * FROM draw_UserInfo WHERE userName = ? AND passWord = ?`;
         let values = [userName, passWord];
 
         return sqlQuery(sql, values);
+    },
+    async register({ userName, passWord }) {
+        let sql = `SELECT * FROM draw_UserInfo WHERE userName = ?`;
+        let values = [userName];
+        let result = await sqlQuery(sql, values);
+        if (result.length) {
+            return '';
+        }
+
+        sql = `INSERT INTO draw_userinfo(id, name, userName, passWord)  VALUES (0, ?, ?, ?)`;
+        values = [userName, userName, passWord];
+        result = await sqlQuery(sql, values);
+
+        return result.insertId;
     },
     getRoomList() {
         let sql = 'SELECT * FROM draw_Room WHERE status = 1';

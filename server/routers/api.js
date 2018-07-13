@@ -20,6 +20,10 @@ apiRouter
         const data = await apiController.login(ctx.request.body);
         ctx.body = successResponse(data);
     })
+    .post('/register', async (ctx) => {
+        const data = await apiController.register(ctx.request.body);
+        ctx.body = successResponse(data);
+    })
     .get('/getRoomList', async (ctx) => {
         const data = await apiController.getRoomList();
         ctx.body = successResponse(data);
