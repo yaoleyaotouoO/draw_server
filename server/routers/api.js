@@ -1,5 +1,7 @@
 const Router = require('koa-router');
 const apiController = require('../controllers/api');
+const enums = require('../common/enums');
+const moment = require('moment');
 
 const apiRouter = new Router({ prefix: '/api' });
 
@@ -38,6 +40,17 @@ apiRouter
     })
     .delete('/:userId/deleteRoomUserByUserId', async (ctx) => {
         const data = await apiController.deleteRoomUserByUserId(ctx.params);
+        ctx.body = successResponse(data);
+    })
+    .post('/createRoom', async (ctx) => {
+        let createRoomData = {
+            roomName: ctx.request.body.roomName,
+            createTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+            status: 1,
+            type: enums.RoomTypeEnum.PublicRoom
+        }
+
+        const data = await apiController.createRoom(createRoomData);
         ctx.body = successResponse(data);
     })
 

@@ -2,7 +2,7 @@ const roomUserCache = require('./roomUserCache');
 const userCache = require('./userCache');
 const webSocketController = require('../controllers/websocket');
 const apiController = require('../controllers/api');
-const enumDto = require('./enumDto');
+const enums = require('../common/enums');
 
 let broadcast = (wss, data, excludeWs) => {
     wss.clients.forEach((client) => {
@@ -25,7 +25,7 @@ let gameCountDown = (wss, topicData, roomId) => {
 
     let time = setInterval(async () => {
         if (!gameTime && ((gameRound + 1) === gameTotalRound)) {
-            await webSocketController.updateRoomStatusbyRoomId({ roomId, status: enumDto.RoomStatusEnum.Ready });
+            await webSocketController.updateRoomStatusbyRoomId({ roomId, status: enums.RoomStatusEnum.Ready });
 
             // 游戏结束统计分数
             broadcast(wss, JSON.stringify({
@@ -90,7 +90,7 @@ let startGame = async (wss, roomId) => {
     let topicData = await webSocketController.getRandomTopic();
     topicData = topicData[0];
 
-    await webSocketController.updateRoomStatusbyRoomId({ roomId, status: enumDto.RoomStatusEnum.Running });
+    await webSocketController.updateRoomStatusbyRoomId({ roomId, status: enums.RoomStatusEnum.Running });
 
     gameCountDown(wss, topicData, roomId);
 }

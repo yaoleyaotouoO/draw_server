@@ -9,5 +9,6 @@ let RoomTypeEnum = {
 }
 
 module.exports = {
-    RoomStatusEnum
+    RoomStatusEnum,
+    RoomTypeEnum
 }

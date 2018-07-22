@@ -59,5 +59,19 @@ module.exports = {
         let values = [userId];
 
         return sqlQuery(sql, values);
+    },
+    async createRoom({ roomName, createTime, status, type }) {
+        let sql = `SELECT * FROM draw_Room WHERE name = ?`;
+        let values = [roomName];
+        let result = await sqlQuery(sql, values);
+        if (result.length) {
+            return '';
+        }
+
+        sql = 'INSERT INTO draw_Room(id, name, createTime, status, type) VALUES (0, ?, ?, ?, ?)';
+        values = [roomName, createTime, status, type];
+
+        result = await sqlQuery(sql, values);
+        return result.insertId;
     }
 }

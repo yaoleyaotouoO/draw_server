@@ -2,12 +2,6 @@ const { sqlQuery } = require('../db/db');
 const moment = require('moment');
 
 module.exports = {
-    createRoom({ name, createTime, status }) {
-        let sql = 'INSERT INTO draw_Room(id, name, createTime, status) VALUES (0, ?, ?, ?)';
-        let values = [name, createTime, status];
-
-        return sqlQuery(sql, values);
-    },
     async addRoomUser({ userId, roomId }) {
         let sql = 'SELECT * FROM draw_RoomUser WHERE userId = ? AND roomId = ?';
         let values = [userId, roomId];
