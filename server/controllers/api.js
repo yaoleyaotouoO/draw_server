@@ -63,7 +63,7 @@ module.exports = {
         values = [roomId];
         let roomUserList = await sqlQuery(sql, values);
         if (!roomUserList.length) {
-            sql = 'DELETE FROM draw_room WHERE roomId = ?';
+            sql = 'DELETE FROM draw_room WHERE roomIdy = ?';
             values = [roomId];
             await sqlQuery(sql, values);
         }
