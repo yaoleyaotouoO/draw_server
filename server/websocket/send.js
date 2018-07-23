@@ -44,7 +44,7 @@ module.exports = async (wss, ws, message) => {
 
             break;
         case 'deleteRoomUser':
-            await apiController.deleteRoomUserByUserId({ userId: messageData.data.userId });
+            await apiController.deleteRoomUserByUserId({ userId: messageData.data.userId, roomId: messageData.data.roomId });
             broadcast(wss, JSON.stringify({
                 data: messageData.data,
                 type: 'deleteRoomUser'
