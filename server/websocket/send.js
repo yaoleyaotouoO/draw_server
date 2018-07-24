@@ -13,14 +13,21 @@ module.exports = async (wss, ws, message) => {
     const messageData = JSON.parse(message);
     let data;
     switch (messageData.type) {
-        case 'addRoomUser':
+        case 'changedRoomUser':
             data = await webSocketController.addRoomUser(messageData.data);
             let userList = await apiController.getRoomUserListByRoomId({ roomId: messageData.data.roomId });
             messageData.data = Object.assign({}, messageData.data, { userList })
-            console.log("mesagedata: addroomUser: ", messageData.data);
+            console.log("mesagedata: changedRoomUser: ", messageData.data);
             broadcast(wss, JSON.stringify({
                 data: messageData.data,
-                type: 'addRoomUser'
+                type: 'changedRoomUser'
+            }));
+
+            break;
+        case 'reloadRoomUser':
+            broadcast(wss, JSON.stringify({
+                data: messageData.data,
+                type: 'changedRoomUser'
             }));
 
             break;

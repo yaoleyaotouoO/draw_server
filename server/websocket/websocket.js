@@ -35,7 +35,7 @@ class WebSocketConnection {
                             userName: this.userName,
                             roomId
                         },
-                        type: 'addRoomUser'
+                        type: 'changedRoomUser'
                     });
                     webSocketSend(wss, ws, message);
                 }
@@ -57,10 +57,28 @@ class WebSocketConnection {
             if (!this.userId) {
                 return;
             }
-
-            webSocketController.setRoomUserAtive({ isActive: 0, id: this.userId });
-            apiController.deleteRoomUserByUserId({ userId: this.userId });
             userCache.delete(this.userId);
+
+            // 解决刷新会删除用户信息问题
+            setTimeout(async () => {
+                if (userCache.get(this.userId)) {
+                    return;
+                }
+
+                let roomId = await apiController.getRoomIdByUserId({ userId: this.userId });
+                await webSocketController.setRoomUserAtive({ isActive: 0, id: this.userId });
+                await apiController.deleteRoomUserByUserId({ userId: this.userId, roomId });
+                let userList = await apiController.getRoomUserListByRoomId({ roomId });
+                let message = JSON.stringify({
+                    data: {
+                        userId: this.userId,
+                        roomId,
+                        userList
+                    },
+                    type: 'reloadRoomUser'
+                });
+                webSocketSend(wss, ws, message);
+            }, 5 * 1000);
         });
     }
 }

@@ -38,10 +38,6 @@ apiRouter
         const data = await apiController.getRoomIdByUserId(ctx.params);
         ctx.body = successResponse(data);
     })
-    .delete('/:userId/deleteRoomUserByUserId', async (ctx) => {
-        const data = await apiController.deleteRoomUserByUserId(ctx.params);
-        ctx.body = successResponse(data);
-    })
     .post('/createRoom', async (ctx) => {
         let createRoomData = {
             roomName: ctx.request.body.roomName,
