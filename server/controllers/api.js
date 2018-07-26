@@ -55,9 +55,19 @@ module.exports = {
         return data ? (data[0] ? data[0].roomId : null) : null;
     },
     async deleteRoomUserByUserId({ userId, roomId }) {
-        let sql = `DELETE FROM draw_roomuser WHERE userId = ?`;
-        let values = [userId];
-        let deleteData = await sqlQuery(sql, values);
+        let sql;
+        let values;
+        let deleteData;
+
+        if (userId instanceof Array) {
+            sql = `DELETE FROM draw_roomuser WHERE userId in (?)`;
+            values = [userId];
+            deleteData = await sqlQuery(sql, values);
+        } else {
+            sql = `DELETE FROM draw_roomuser WHERE userId = ?`;
+            values = [userId];
+            deleteData = await sqlQuery(sql, values);
+        }
 
         sql = 'SELECT * FROM draw_roomuser WHERE roomId = ?';
         values = [roomId];
@@ -86,6 +96,17 @@ module.exports = {
     findRoom({ roomName }) {
         let sql = `SELECT * FROM draw_Room WHERE name = ?`;
         let values = [roomName];
+        return sqlQuery(sql, values);
+    },
+    getAllRoomIdList() {
+        let sql = 'SELECT Id FROM draw_Room';
+
+        return sqlQuery(sql);
+    },
+    getUserIdListByroomId({ roomId }) {
+        let sql = 'SELECT userId FROM draw_RoomUser Where roomId = ?';
+        let values = [roomId];
+
         return sqlQuery(sql, values);
     }
 }

@@ -1,8 +1,8 @@
 const ws = require('ws');
 const webSocketSend = require('./send');
 const webSocketController = require('../controllers/websocket');
-const apiController = require('../controllers/api')
-const userCache = require('./userCache');
+const apiController = require('../controllers/api');
+const userCache = require('../caches/userCache');
 
 const WebSocketServer = ws.Server;
 

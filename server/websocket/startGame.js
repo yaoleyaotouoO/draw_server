@@ -1,5 +1,5 @@
-const roomUserCache = require('./roomUserCache');
-const userCache = require('./userCache');
+const roomUserCache = require('../caches/roomUserCache');
+const userCache = require('../caches/userCache');
 const webSocketController = require('../controllers/websocket');
 const apiController = require('../controllers/api');
 const enums = require('../common/enums');
