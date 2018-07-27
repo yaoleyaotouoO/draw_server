@@ -1,21 +1,18 @@
 const webSocketController = require('../controllers/websocket');
 const apiController = require('../controllers/api');
-const { startGame, checkAnswer } = require('./startGame');
-
-let broadcast = (wss, data) => {
-    wss.clients.forEach((client) => {
-        client.send(data);
-    });
-}
+const { StartGameContext } = require('./startGame');
+const { RoomUserStatusEnum } = require('../common/enums');
+const { broadcast } = require('../common/websocketUtil');
 
 module.exports = async (wss, ws, message) => {
     console.log('websocket send message: ', message);
     const messageData = JSON.parse(message);
     let data;
+    let roomId = messageData.data.roomId;
     switch (messageData.type) {
         case 'changedRoomUser':
             data = await webSocketController.addRoomUser(messageData.data);
-            let userList = await apiController.getRoomUserListByRoomId({ roomId: messageData.data.roomId });
+            let userList = await apiController.getRoomUserListByRoomId({ roomId });
             messageData.data = Object.assign({}, messageData.data, { userList })
             console.log("mesagedata: changedRoomUser: ", messageData.data);
             broadcast(wss, JSON.stringify({
@@ -32,11 +29,12 @@ module.exports = async (wss, ws, message) => {
 
             break;
         case 'startGame':
+            await apiController.updateRoomUserStatus({ roomId, status: RoomUserStatusEnum.InTheGame });
             broadcast(wss, JSON.stringify({
                 data: messageData.data,
                 type: 'startGame'
             }));
-            startGame(wss, messageData.data.roomId);
+            new StartGameContext(wss, roomId);
 
             break;
         case 'drawPicture':
@@ -47,11 +45,11 @@ module.exports = async (wss, ws, message) => {
 
             break;
         case 'submitAnswer':
-            checkAnswer(wss, messageData.data);
+            new CheckAnswerContext(wss, messageData.data);
 
             break;
         case 'deleteRoomUser':
-            await apiController.deleteRoomUserByUserId({ userId: messageData.data.userId, roomId: messageData.data.roomId });
+            await apiController.deleteRoomUserByUserId({ userId: messageData.data.userId, roomId });
             broadcast(wss, JSON.stringify({
                 data: messageData.data,
                 type: 'deleteRoomUser'

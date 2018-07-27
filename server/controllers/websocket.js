@@ -1,5 +1,6 @@
 const { sqlQuery } = require('../db/db');
 const moment = require('moment');
+const { RoomUserStatusEnum } = require('../common/enums');
 
 module.exports = {
     async addRoomUser({ userId, roomId }) {
@@ -9,8 +10,8 @@ module.exports = {
         if (data.length > 0) return;
 
         let inTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        values.push(inTime);
-        sql = 'INSERT INTO draw_RoomUser(id, userId, roomId, inTime) VALUES (0, ?, ?, ?)';
+        values = [userId, roomId, inTime, RoomUserStatusEnum.Ready];
+        sql = 'INSERT INTO draw_RoomUser(id, userId, roomId, inTime, status) VALUES (0, ?, ?, ?, ?)';
 
         return await sqlQuery(sql, values);
     },

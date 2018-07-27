@@ -35,7 +35,7 @@ module.exports = {
     getRoomUserListByRoomId({ roomId }) {
         let sql = `
             SELECT 
-                ru.userId, ui.name userName
+                ru.userId, ui.name userName, ru.status, ru.score
             FROM 
                 draw_RoomUser ru
             LEFT JOIN 
@@ -106,6 +106,30 @@ module.exports = {
     getUserIdListByroomId({ roomId }) {
         let sql = 'SELECT userId FROM draw_RoomUser Where roomId = ?';
         let values = [roomId];
+
+        return sqlQuery(sql, values);
+    },
+    updateRoomUserStatus({ roomId, status }) {
+        let sql = `UPDATE draw_roomuser SET status = ? WHERE roomId = ?`;
+        let values = [status, roomId];
+
+        return sqlQuery(sql, values);
+    },
+    updateRoomUserStatusByUserId({ roomId, userId, status }) {
+        let sql = `UPDATE draw_roomuser SET status = ? WHERE roomId = ? AND userId = ?`;
+        let values = [status, roomId, userId];
+
+        return sqlQuery(sql, values);
+    },
+    async updateRoomUserScoreByUserId({ score, roomId, userId }) {
+        let sql = `SELECT score FROM draw_roomuser Where roomId = ? AND userId = ?`;
+        let values = [roomId, userId];
+
+        let scoreList = await sqlQuery(sql, values);
+        let oldScore = scoreList.length ? scoreList[0].score : 0;
+        score += oldScore;
+        sql = `UPDATE draw_roomuser SET score = ? WHERE roomId = ? AND userId = ?`;
+        values = [score, roomId, userId];
 
         return sqlQuery(sql, values);
     }

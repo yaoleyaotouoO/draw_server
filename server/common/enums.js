@@ -4,11 +4,18 @@ let RoomStatusEnum = {
 }
 
 let RoomTypeEnum = {
-    PrivateRoom: 0,
-    PublicRoom: 1
+    PublicRoom: 1,
+    PrivateRoom: 2,
+}
+
+let RoomUserStatusEnum = {
+    NotReady: 0,
+    Ready: 1,
+    InTheGame: 2
 }
 
 module.exports = {
     RoomStatusEnum,
-    RoomTypeEnum
+    RoomTypeEnum,
+    RoomUserStatusEnum
 }

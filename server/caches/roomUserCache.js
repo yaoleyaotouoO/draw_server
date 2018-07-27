@@ -7,7 +7,7 @@ module.exports = {
     get(key) {
         return roomUsers[key];
     },
-    clear(key) {
-
+    delete(key) {
+        delete roomUsers[key];
     }
 }

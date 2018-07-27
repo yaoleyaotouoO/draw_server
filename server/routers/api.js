@@ -55,5 +55,13 @@ apiRouter
         const data = await apiController.findRoom({ roomName });
         ctx.body = successResponse(data);
     })
+    .post('/deleteRoomUserByUserId', async (ctx) => {
+        const data = await apiController.deleteRoomUserByUserId(ctx.request.body);
+        ctx.body = successResponse(data);
+    })
+    .post('/updateRoomUserStatusByUserId', async (ctx) => {
+        const data = await apiController.updateRoomUserStatusByUserId(ctx.request.body);
+        ctx.body = successResponse(data);
+    })
 
 module.exports = apiRouter;
