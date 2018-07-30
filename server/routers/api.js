@@ -50,7 +50,6 @@ apiRouter
         ctx.body = successResponse(data);
     })
     .get('/findRoom', async (ctx) => {
-        console.log("request.query: ", ctx.request.query);
         let { roomName } = ctx.request.query;
         const data = await apiController.findRoom({ roomName });
         ctx.body = successResponse(data);

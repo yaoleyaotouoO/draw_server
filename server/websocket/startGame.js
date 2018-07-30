@@ -6,92 +6,7 @@ const { RoomStatusEnum } = require('../common/enums');
 const { broadcast } = require('../common/websocketUtil');
 
 
-// let gameCountDown = (wss, topicData, roomId) => {
-//     const oneRoundTime = 10;
-//     let gameTime = oneRoundTime;
-//     let topicName = topicData.name;
-//     let topicPrompt = topicData.prompt;
-//     let roomUserList;
-//     let drawUserId;
-//     let gameInfo;
-//     let gameRound = 0;
-//     let gameTotalRound = 4; // 默认一共4轮，根据人数改变
-
-//     let time = setInterval(async () => {
-//         if (!gameTime && ((gameRound + 1) === gameTotalRound)) {
-//             await webSocketController.updateRoomStatusbyRoomId({ roomId, status: RoomStatusEnum.Ready });
-
-//             // 游戏结束统计分数
-//             broadcast(wss, JSON.stringify({
-//                 data: { roomId, showScore: true },
-//                 type: 'gameOver'
-//             }));
-
-//             clearInterval(time);
-//             return;
-//         }
-
-//         if (!gameTime) {
-//             gameRound++;
-//             console.log(`第 ${gameRound + 1} 轮游戏`);
-//             // 通知前端弹窗显示答案
-//             broadcast(wss, JSON.stringify({
-//                 data: { roomId, topicName, showAnswer: true },
-//                 type: 'showAnswer'
-//             }), userCache.get(drawUserId).ws);
-
-//             // 下一个人画, 重新计时重新出题
-//             topicData = await webSocketController.getRandomTopic();
-//             topicData = topicData[0];
-//             topicName = topicData.name;
-//             topicPrompt = topicData.prompt;
-//             gameTime = oneRoundTime;
-
-//             if (gameRound >= gameTotalRound / 2) {
-//                 drawUserId = roomUserList[gameRound - gameTotalRound / 2].userId;
-//             } else {
-//                 drawUserId = roomUserList[gameRound].userId;
-//             }
-//         }
-
-//         // 定时查一下数据库，看是否有用户离线了
-//         if (!(gameTime % oneRoundTime)) {
-//             roomUserList = await apiController.getRoomUserListByRoomId({ roomId })
-//             gameTotalRound = roomUserList.length * 2;
-//             if (gameRound === 0) {
-//                 drawUserId = roomUserList[0].userId;
-//             }
-//         }
-
-//         gameInfo = { roomUserList, gameTime, drawUserId, roomId }
-//         roomUserCache.set(roomId, Object.assign({}, gameInfo, { topicName, topicPrompt }));
-//         gameTime--;
-
-//         // 发送给画的人
-//         userCache.get(drawUserId) && userCache.get(drawUserId).ws.send(JSON.stringify({
-//             data: Object.assign({}, gameInfo, { topicName }),
-//             type: 'gameInfo'
-//         }));
-
-//         broadcast(wss, JSON.stringify({
-//             data: Object.assign({}, gameInfo, { topicPrompt }),
-//             type: 'gameInfo'
-//         }), userCache.get(drawUserId).ws);
-//     }, 1000);
-// }
-
-// let startGame = async (wss, roomId) => {
-//     let topicData = await webSocketController.getRandomTopic();
-//     topicData = topicData[0];
-
-//     await webSocketController.updateRoomStatusbyRoomId({ roomId, status: RoomStatusEnum.Running });
-
-//     gameCountDown(wss, topicData, roomId);
-// }
-
-
-
-const oneRoundTime = 100;
+const oneRoundTime = 20;
 
 class StartGameContext {
     constructor(wss, roomId) {
@@ -150,7 +65,7 @@ class StartGameContext {
     sendMessageToUser() {
         // 发送给画的人
         let drawUserIdByCache = userCache.get(this.drawUserId);
-        this.roomUserCache = Object.assign({}, this.this.roomUserCache, { topicName: '', topicPrompt: '' })
+        this.roomUserCache = Object.assign({}, this.roomUserCache, { topicName: '', topicPrompt: '' })
         if (drawUserIdByCache) {
             drawUserIdByCache.ws.send(JSON.stringify({
                 data: Object.assign({}, this.roomUserCache, { topicName: this.topicName }),
@@ -175,7 +90,7 @@ class StartGameContext {
         }
 
         this.roomUserCache = roomUserCache.get(this.roomId);
-        this.roomUserCache = Object.assign({}, this.roomUserCache, gameInfo)
+        this.roomUserCache = Object.assign({}, this.roomUserCacche, gameInfo);
         roomUserCache.set(this.roomId, this.roomUserCache);
     }
 
@@ -183,11 +98,16 @@ class StartGameContext {
         if (!this.gameTime && ((this.gameRound + 1) === this.gameTotalRound)) {
             await webSocketController.updateRoomStatusbyRoomId({ roomId: this.roomId, status: RoomStatusEnum.Ready });
 
+            let gameOverScoreList = await apiController.getRoomUserListByRoomId({ roomId: this.roomId });
+            gameOverScoreList = gameOverScoreList.sort((a, b) => a.score < b.score);
             // TODO 游戏结束统计分数
             broadcast(this.wss, JSON.stringify({
-                data: { roomId: this.roomId, showScore: true },
+                data: { roomId: this.roomId, gameOverScoreList },
                 type: 'gameOver'
             }));
+
+            // 清空分数
+            await apiController.clearScoreOnUserList({ roomId: this.roomId });
 
             roomUserCache.delete(this.roomId);
             clearInterval(this.gamePollTag);
@@ -225,6 +145,14 @@ class StartGameContext {
         // 下一个人画, 重新计时重新出题
         await this.getTopic();
         this.getDrawUserId();
+
+        roomUserCache.set(this.roomId, Object.assign({}, this.roomUserCache, { answerNumber: 0 }));
+
+        // 每轮开始的时候，都重置答对的Flag
+        for (let item in this.roomUserCache.roomUserList) {
+            let userInfo = userCache.get(item.userId);
+            userCache.set(this.userId, Object.assign({}, userInfo, { isBingo: false }));
+        }
     }
 
     // 定时查一下数据库，看是否有用户离线了

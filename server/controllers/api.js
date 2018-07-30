@@ -126,10 +126,16 @@ module.exports = {
         let values = [roomId, userId];
 
         let scoreList = await sqlQuery(sql, values);
-        let oldScore = scoreList.length ? scoreList[0].score : 0;
+        let oldScore = scoreList[0].score || 0;
         score += oldScore;
         sql = `UPDATE draw_roomuser SET score = ? WHERE roomId = ? AND userId = ?`;
         values = [score, roomId, userId];
+
+        return sqlQuery(sql, values);
+    },
+    clearScoreOnUserList({ roomId }) {
+        let sql = `UPDATE draw_roomuser SET score = 0 WHERE roomId = ?`;
+        let values = [roomId];
 
         return sqlQuery(sql, values);
     }

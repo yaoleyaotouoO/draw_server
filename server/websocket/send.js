@@ -6,7 +6,6 @@ const { RoomUserStatusEnum } = require('../common/enums');
 const { broadcast } = require('../common/websocketUtil');
 
 module.exports = async (wss, ws, message) => {
-    console.log('websocket send message: ', message);
     const messageData = JSON.parse(message);
     let data;
     let roomId = messageData.data.roomId;
@@ -15,7 +14,6 @@ module.exports = async (wss, ws, message) => {
             data = await webSocketController.addRoomUser(messageData.data);
             let userList = await apiController.getRoomUserListByRoomId({ roomId });
             messageData.data = Object.assign({}, messageData.data, { userList })
-            console.log("mesagedata: changedRoomUser: ", messageData.data);
             broadcast(wss, JSON.stringify({
                 data: messageData.data,
                 type: 'changedRoomUser'

@@ -22,7 +22,6 @@ class WebSocketConnection {
         this.userName = '';
 
         ws.on('message', (message) => {
-            console.log("message: ", message);
             const messageData = JSON.parse(message);
             if (messageData.type === 'setWebSocketUserId') {
                 this.userId = messageData.data.userId;
@@ -53,7 +52,6 @@ class WebSocketConnection {
         });
 
         ws.on('close', (event) => {
-            console.log("userId: ", this.userId);
             if (!this.userId) {
                 return;
             }

@@ -1,6 +1,7 @@
 const roomUserCache = require('../caches/roomUserCache');
 const { broadcast } = require('../common/websocketUtil');
 const apiController = require('../controllers/api');
+const userCache = require('../caches/userCache');
 
 
 class CheckAnswerContext {
@@ -18,22 +19,18 @@ class CheckAnswerContext {
     async checkAnswer() {
         this.roomUserCache = roomUserCache.get(this.roomId);
         let chatMessage = '';
-        console.log("roomUserCache: ", this.roomUserCache);
         if (this.roomUserCache.topicName === this.drawAnswer) {
             // TODO 记录答对的人和第几次答对
             await this.recordCorrectAnswerInfo();
 
             // TODO 重新获取一下用户数据, 为了拿最新的分数 
-            let roomUserList = await apiController.getRoomUserListByRoomId({ roomId: this.roomId });
+            let roomUserScoreList = await apiController.getRoomUserListByRoomId({ roomId: this.roomId });
+            broadcast(this.wss, JSON.stringify({
+                data: { roomId: this.roomId, roomUserScoreList },
+                type: 'showRoomUserScore'
+            }));
 
             chatMessage = `${this.userName}: 答对了!`;
-            this.roomUserCache = Object.assign({}, this.roomUserCache, { roomUserList });
-
-            roomUserCache.set(this.roomId, this.roomUserCache);
-            broadcast(this.wss, JSON.stringify({
-                data: this.roomUserCache,
-                type: 'changedRoomUser'
-            }));
         } else {
             chatMessage = `${this.userName}: ${this.drawAnswer}`;
         }
@@ -45,9 +42,17 @@ class CheckAnswerContext {
     }
 
     async recordCorrectAnswerInfo() {
+        let userInfo = userCache.get(this.userId);
+        // 已经答对过了
+        if (userInfo.isBingo) {
+            return;
+        }
+        userCache.set(this.userId, Object.assign({}, userInfo, { isBingo: true }));
+
         // 答对题的人数
+        console.log("this.roomUserCache: ", this.roomUserCache);
         let answerNumber = this.roomUserCache.answerNumber || 0;
-        answerNumber = answerNumber++;
+        answerNumber = ++answerNumber;
         let score = 0;
         if (answerNumber === 1) {
             score = 3;
@@ -58,12 +63,7 @@ class CheckAnswerContext {
         }
 
         await apiController.updateRoomUserScoreByUserId({ score, roomId: this.roomId, userId: this.userId });
-        roomUserCache.set(this.roomId,
-            Object.assign(
-                {},
-                this.roomUserCache,
-                { answerNumber }
-            ));
+        roomUserCache.set(this.roomId, Object.assign({}, this.roomUserCache, { answerNumber }));
     }
 }
 
