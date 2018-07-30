@@ -90,7 +90,8 @@ const { broadcast } = require('../common/websocketUtil');
 // }
 
 
-const oneRoundTime = 10;
+
+const oneRoundTime = 100;
 
 class StartGameContext {
     constructor(wss, roomId) {
@@ -101,10 +102,10 @@ class StartGameContext {
         this.gameTime = 0;
         this.roomUserList = [];
         this.drawUserId = '';
-        this.gameInfo = {};
         this.gameRound = 0;
         this.gameTotalRound = 4; // 默认一共4轮，根据人数改变
         this.gamePollTag = null;
+        this.roomUserCache = {};
 
         this.initGame();
     }
@@ -149,33 +150,33 @@ class StartGameContext {
     sendMessageToUser() {
         // 发送给画的人
         let drawUserIdByCache = userCache.get(this.drawUserId);
+        this.roomUserCache = Object.assign({}, this.this.roomUserCache, { topicName: '', topicPrompt: '' })
         if (drawUserIdByCache) {
             drawUserIdByCache.ws.send(JSON.stringify({
-                data: Object.assign({}, this.gameInfo, { topicName: this.topicName }),
+                data: Object.assign({}, this.roomUserCache, { topicName: this.topicName }),
                 type: 'gameInfo'
             }));
         }
 
-        broadcast(wss, JSON.stringify({
-            data: Object.assign({}, this.gameInfo, { topicPrompt: this.topicPrompt }),
+        broadcast(this.wss, JSON.stringify({
+            data: Object.assign({}, this.roomUserCache, { topicPrompt: this.topicPrompt }),
             type: 'gameInfo'
         }), drawUserIdByCache.ws);
     }
 
     setRoomUserCache() {
-        this.gameInfo = {
+        let gameInfo = {
             roomUserList: this.roomUserList,
             gameTime: this.gameTime,
             drawUserId: this.drawUserId,
-            roomId: this.roomId
+            roomId: this.roomId,
+            topicName: this.topicName,
+            topicPrompt: this.topicPrompt
         }
 
-        roomUserCache.set(this.roomId,
-            Object.assign(
-                {},
-                this.gameInfo,
-                { topicName: this.topicName, topicPrompt: this.topicPrompt }
-            ));
+        this.roomUserCache = roomUserCache.get(this.roomId);
+        this.roomUserCache = Object.assign({}, this.roomUserCache, gameInfo)
+        roomUserCache.set(this.roomId, this.roomUserCache);
     }
 
     async gameOverDisplayScore() {
@@ -183,8 +184,8 @@ class StartGameContext {
             await webSocketController.updateRoomStatusbyRoomId({ roomId: this.roomId, status: RoomStatusEnum.Ready });
 
             // TODO 游戏结束统计分数
-            broadcast(wss, JSON.stringify({
-                data: { roomId, showScore: true },
+            broadcast(this.wss, JSON.stringify({
+                data: { roomId: this.roomId, showScore: true },
                 type: 'gameOver'
             }));
 

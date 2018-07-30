@@ -1,6 +1,7 @@
 const webSocketController = require('../controllers/websocket');
 const apiController = require('../controllers/api');
 const { StartGameContext } = require('./startGame');
+const { CheckAnswerContext } = require('./checkAnswer');
 const { RoomUserStatusEnum } = require('../common/enums');
 const { broadcast } = require('../common/websocketUtil');
 

@@ -17,6 +17,7 @@ class CheckAnswerContext {
 
     async checkAnswer() {
         this.roomUserCache = roomUserCache.get(this.roomId);
+        let chatMessage = '';
         console.log("roomUserCache: ", this.roomUserCache);
         if (this.roomUserCache.topicName === this.drawAnswer) {
             // TODO 记录答对的人和第几次答对
@@ -25,18 +26,21 @@ class CheckAnswerContext {
             // TODO 重新获取一下用户数据, 为了拿最新的分数 
             let roomUserList = await apiController.getRoomUserListByRoomId({ roomId: this.roomId });
 
-            let chatMessage = `${this.userName}: 答对了!`;
-            this.roomUserCache = Object.assign({}, this.roomUserCache, { chatMessage, roomUserList });
+            chatMessage = `${this.userName}: 答对了!`;
+            this.roomUserCache = Object.assign({}, this.roomUserCache, { roomUserList });
 
             roomUserCache.set(this.roomId, this.roomUserCache);
+            broadcast(this.wss, JSON.stringify({
+                data: this.roomUserCache,
+                type: 'changedRoomUser'
+            }));
         } else {
-            let chatMessage = `${this.userName}: ${this.drawAnswer}`;
-            this.roomUserCache = Object.assign({}, this.roomUserCache, { chatMessage });
+            chatMessage = `${this.userName}: ${this.drawAnswer}`;
         }
 
-        broadcast(wss, JSON.stringify({
-            data: this.roomUserCache,
-            type: 'changedRoomUser'
+        broadcast(this.wss, JSON.stringify({
+            data: { roomId: this.roomId, chatMessage, showChatMessage: true },
+            type: 'showChatMessage'
         }));
     }
 
@@ -54,7 +58,7 @@ class CheckAnswerContext {
         }
 
         await apiController.updateRoomUserScoreByUserId({ score, roomId: this.roomId, userId: this.userId });
-        this.roomUserCache.set(this.roomId,
+        roomUserCache.set(this.roomId,
             Object.assign(
                 {},
                 this.roomUserCache,
