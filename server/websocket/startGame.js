@@ -6,7 +6,7 @@ const { RoomStatusEnum } = require('../common/enums');
 const { broadcast } = require('../common/websocketUtil');
 
 
-const oneRoundTime = 20;
+const oneRoundTime = 100;
 
 class StartGameContext {
     constructor(wss, roomId) {
@@ -149,9 +149,9 @@ class StartGameContext {
         roomUserCache.set(this.roomId, Object.assign({}, this.roomUserCache, { answerNumber: 0 }));
 
         // 每轮开始的时候，都重置答对的Flag
-        for (let item in this.roomUserCache.roomUserList) {
-            let userInfo = userCache.get(item.userId);
-            userCache.set(this.userId, Object.assign({}, userInfo, { isBingo: false }));
+        for (let item of this.roomUserCache.roomUserList) {
+            let userInfo = userCache.get(Number(item.userId));
+            userCache.set(item.userId, Object.assign({}, userInfo, { isBingo: false }));
         }
     }
 
