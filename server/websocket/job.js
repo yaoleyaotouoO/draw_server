@@ -20,5 +20,5 @@ let serviceStartDeleteExpiredRoomUser = async () => {
 
 
 module.exports = () => {
-    serviceStartDeleteExpiredRoomUser()
+ //   serviceStartDeleteExpiredRoomUser()
 }
