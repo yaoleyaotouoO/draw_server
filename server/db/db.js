@@ -1,12 +1,12 @@
 const mysql = require('mysql');
+const path = require('path');
+const fs = require('fs');
 
-const pool = mysql.createPool({
-    host: '47.106.185.178',
-    user: 'root',
-    password: 'Xjx13874731322',
-    port: '3306',
-    database: 'draw'
-});
+
+const filePath = path.join(__dirname, '../../config.json');
+const mysqlConfig = JSON.parse(fs.readFileSync(filePath));
+
+const pool = mysql.createPool(mysqlConfig);
 
 let sqlQuery = (sql, values) => {
     return new Promise((resolve, reject) => {
